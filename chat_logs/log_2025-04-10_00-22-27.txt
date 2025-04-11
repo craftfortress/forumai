@@ -1,0 +1,4 @@
+Chat Session: 2025-04-10_00-22-27
+==================================================
+
+Error occurred: 'GroupChatManager' object has no attribute 'run'

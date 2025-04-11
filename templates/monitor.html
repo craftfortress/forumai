@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForumAI</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --panel-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --accent-color: #FF9800;
+            --highlight-color: #9C27B0;
+            --system-color: #607D8B;
+            --shadow-color: rgba(0,0,0,0.1);
+            --debug-color: #ff5252;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --panel-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #444444;
+            --primary-color: #66bb6a;
+            --secondary-color: #64b5f6;
+            --accent-color: #ffb74d;
+            --highlight-color: #ba68c8;
+            --system-color: #90a4ae;
+            --shadow-color: rgba(0,0,0,0.3);
+            --debug-color: #ff7676;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: 4px;
+            padding: 15px;
+            box-shadow: 0 1px 3px var(--shadow-color);
+        }
+        
+        h1, h2 {
+            color: var(--text-color);
+            margin-top: 0;
+            font-weight: 600;
+        }
+        
+        .title-ai {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .log-container, .strategy-container, .goals-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            margin-bottom: 15px;
+            background-color: var(--panel-bg);
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        
+        .strategy-container, .goals-container {
+            height: 200px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        
+        button.stop {
+            background-color: #f44336;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .agent-researcher {
+            color: var(--secondary-color);
+        }
+        
+        .agent-strategist {
+            color: var(--primary-color);
+        }
+        
+        .agent-implementer {
+            color: var(--accent-color);
+        }
+        
+        .agent-user_proxy {
+            color: var(--highlight-color);
+        }
+        
+        .system {
+            color: var(--system-color);
+            font-weight: bold;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-color);
+        }
+        
+        .debug-container {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 300px;
+            height: 150px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: var(--debug-color);
+            box-shadow: 0 1px 3px var(--shadow-color);
+            z-index: 1000;
+        }
+        
+        .debug-toggle {
+            position: fixed;
+            bottom: 10px;
+            right: 320px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-color);
+        }
+        
+        .message {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .timestamp {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle">Toggle Dark Mode</button>
+    <button id="debugToggle" class="debug-toggle">Toggle Debug</button>
+    <div id="debugContainer" class="debug-container" style="display: none;"></div>
+    
+    <div class="container">
+        <div class="panel">
+            <h1>Forum<span class="title-ai">AI</span></h1>
+            <div class="controls">
+                <button id="startBtn">Start Discussion</button>
+                <button id="stopBtn" class="stop" disabled>Stop Discussion</button>
+                <button id="clearBtn">Clear Logs</button>
+            </div>
+            <h2>Chat Logs</h2>
+            <div id="logContainer" class="log-container"></div>
+        </div>
+        <div class="panel">
+            <h2>Current Strategy</h2>
+            <div id="strategyContainer" class="strategy-container"></div>
+            <h2>Goals</h2>
+            <div id="goalsContainer" class="goals-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let ws = null;
+        const logContainer = document.getElementById('logContainer');
+        const strategyContainer = document.getElementById('strategyContainer');
+        const goalsContainer = document.getElementById('goalsContainer');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const debugToggle = document.getElementById('debugToggle');
+        const debugContainer = document.getElementById('debugContainer');
+        
+        // Theme toggle
+        themeToggle.addEventListener('click', function() {
+            if (document.body.getAttribute('data-theme') === 'dark') {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+        // Debug toggle
+        debugToggle.addEventListener('click', function() {
+            if (debugContainer.style.display === 'none') {
+                debugContainer.style.display = 'block';
+                localStorage.setItem('debug', 'visible');
+            } else {
+                debugContainer.style.display = 'none';
+                localStorage.setItem('debug', 'hidden');
+            }
+        });
+        
+        // Check for saved preferences
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+        
+        if (localStorage.getItem('debug') === 'visible') {
+            debugContainer.style.display = 'block';
+        }
+        
+        // Debug function
+        function debugLog(message) {
+            console.log(`[DEBUG] ${message}`);
+            // Add to debug container instead of log container
+            const debugMsg = `<div class="message">[DEBUG] ${message}</div>`;
+            debugContainer.innerHTML += debugMsg;
+            debugContainer.scrollTop = debugContainer.scrollHeight;
+        }
+        
+        // Function to format log messages with colors
+        function formatLogMessage(message) {
+            debugLog(`Formatting message: ${message}`);
+            
+            // Handle different message formats
+            let formattedContent = message;
+            
+            // Try to extract timestamp if present
+            const timestampMatch = message.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (.+)$/);
+            if (timestampMatch) {
+                const timestamp = timestampMatch[1];
+                const content = timestampMatch[2];
+                
+                // Format agent messages
+                if (content.includes('Researcher:')) {
+                    formattedContent = `<span class="agent-researcher">${content}</span>`;
+                } else if (content.includes('Strategist:')) {
+                    formattedContent = `<span class="agent-strategist">${content}</span>`;
+                } else if (content.includes('Implementer:')) {
+                    formattedContent = `<span class="agent-implementer">${content}</span>`;
+                } else if (content.includes('User_Proxy:')) {
+                    formattedContent = `<span class="agent-user_proxy">${content}</span>`;
+                } else if (content.includes('System:')) {
+                    formattedContent = `<span class="system">${content}</span>`;
+                }
+                
+                return `<div class="message"><span class="timestamp">${timestamp}</span> - ${formattedContent}</div>`;
+            }
+            
+            // If no timestamp, just format the content
+            if (message.includes('Researcher:')) {
+                formattedContent = `<span class="agent-researcher">${message}</span>`;
+            } else if (message.includes('Strategist:')) {
+                formattedContent = `<span class="agent-strategist">${message}</span>`;
+            } else if (message.includes('Implementer:')) {
+                formattedContent = `<span class="agent-implementer">${message}</span>`;
+            } else if (message.includes('User_Proxy:')) {
+                formattedContent = `<span class="agent-user_proxy">${message}</span>`;
+            } else if (message.includes('System:')) {
+                formattedContent = `<span class="system">${message}</span>`;
+            }
+            
+            return `<div class="message">${formattedContent}</div>`;
+        }
+        
+        function connectWebSocket() {
+            debugLog('Connecting to WebSocket...');
+            ws = new WebSocket('ws://' + window.location.hostname + ':5001/ws');
+            
+            ws.onopen = function() {
+                debugLog('WebSocket connection established');
+                // Load initial logs
+                fetch('/get_previous_logs')
+                    .then(response => response.text())
+                    .then(logs => {
+                        debugLog(`Received logs: ${logs.length} characters`);
+                        if (logs.trim()) {
+                            const logLines = logs.split('\n').filter(line => line.trim());
+                            logContainer.innerHTML = logLines.map(formatLogMessage).join('');
+                            logContainer.scrollTop = logContainer.scrollHeight;
+                        } else {
+                            debugLog('No logs found');
+                        }
+                    })
+                    .catch(error => debugLog(`Error loading logs: ${error}`));
+                
+                // Load initial strategy
+                fetch('/get_strategy')
+                    .then(response => response.text())
+                    .then(strategy => {
+                        debugLog(`Received strategy: ${strategy.length} characters`);
+                        strategyContainer.textContent = strategy;
+                    })
+                    .catch(error => debugLog(`Error loading strategy: ${error}`));
+                
+                // Load initial goals
+                fetch('/get_goals')
+                    .then(response => response.text())
+                    .then(goals => {
+                        debugLog(`Received goals: ${goals.length} characters`);
+                        goalsContainer.textContent = goals;
+                    })
+                    .catch(error => debugLog(`Error loading goals: ${error}`));
+            };
+            
+            ws.onmessage = function(event) {
+                debugLog(`Received WebSocket message: ${event.data}`);
+                try {
+                    // Check if the message is a JSON object
+                    let messageData = event.data;
+                    try {
+                        messageData = JSON.parse(event.data);
+                        if (messageData.log) {
+                            messageData = messageData.log;
+                        }
+                    } catch (e) {
+                        // Not JSON, use as is
+                    }
+                    
+                    const formattedMessage = formatLogMessage(messageData);
+                    logContainer.innerHTML += formattedMessage;
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                    
+                    // Play sound for new messages
+                    fetch('/play_sound')
+                        .then(response => response.json())
+                        .then(data => debugLog(`Sound played: ${JSON.stringify(data)}`))
+                        .catch(error => debugLog(`Error playing sound: ${error}`));
+                } catch (error) {
+                    debugLog(`Error formatting message: ${error}`);
+                    // Add raw message if formatting fails
+                    logContainer.innerHTML += `<div class="message">${event.data}</div>`;
+                }
+            };
+            
+            ws.onclose = function() {
+                debugLog('WebSocket connection closed, attempting to reconnect...');
+                setTimeout(connectWebSocket, 1000);
+            };
+            
+            ws.onerror = function(error) {
+                debugLog(`WebSocket error: ${error}`);
+            };
+        }
+        
+        // Initial connection
+        connectWebSocket();
+        
+        // Button event handlers
+        startBtn.addEventListener('click', function() {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            // Clear logs before starting new discussion
+            logContainer.innerHTML = '';
+            
+            fetch('/start_discussion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    topic: 'How can I achieve my goals with cunning and keeping costs low?'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                debugLog(`Discussion started: ${JSON.stringify(data)}`);
+            })
+            .catch(error => {
+                debugLog(`Error starting discussion: ${error}`);
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            });
+        });
+        
+        stopBtn.addEventListener('click', function() {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            fetch('/stop_discussion', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                debugLog(`Discussion stopped: ${JSON.stringify(data)}`);
+            })
+            .catch(error => {
+                debugLog(`Error stopping discussion: ${error}`);
+            });
+        });
+        
+        clearBtn.addEventListener('click', function() {
+            fetch('/clear_logs', {
+                method: 'POST'
+            })
+            .then(response => response.text())
+            .then(result => {
+                debugLog(`Logs cleared: ${result}`);
+                logContainer.innerHTML = '';
+            })
+            .catch(error => {
+                debugLog(`Error clearing logs: ${error}`);
+            });
+        });
+    </script>
+</body>
+</html> 
