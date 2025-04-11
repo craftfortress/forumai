@@ -1,94 +1,65 @@
-# Agent Village
+# ForumAI
 
-A collaborative AI agent system that uses multiple specialized agents to discuss and refine strategies for solving complex problems.
-
-## Overview
-
-Agent Village is a web-based monitoring system that allows you to observe and interact with a group of AI agents as they collaborate to solve problems. The system includes:
-
-- A web interface for monitoring agent discussions
-- Real-time strategy evolution tracking
-- Multiple specialized agents (Researcher, Strategist, Implementer)
-- Persistent logging of all agent interactions
+A collaborative AI system that uses multiple AI agents to help achieve your goals through strategic discussions and implementation planning.
 
 ## Features
 
-- **Multi-Agent Collaboration**: Three specialized agents work together to analyze and solve problems
-- **Strategy Evolution**: Watch as the agents refine their approach over time
-- **Real-time Monitoring**: Web interface to observe agent discussions and strategy changes
-- **Persistent Logging**: All agent interactions are saved for later review
+- Multiple specialized AI agents working together
+- Real-time discussion monitoring
+- Goal tracking and strategy development
+- Web-based monitoring interface
+- Persistent storage of goals and strategies
 
-## Requirements
+## Setup
 
-- Python 3.10+
-- OpenAI API key
-- Flask
-- PyAutoGen
-- OpenAI Python client
-- Python-dotenv
+1. Clone the repository:
+```bash
+git clone https://github.com/craftfortress/forumai.git
+cd forumai
+```
 
-## Installation
+2. Create and activate a virtual environment:
+```bash
+python -m venv agent_village_env
+source agent_village_env/bin/activate  # On Windows: agent_village_env\Scripts\activate
+```
 
-1. Clone this repository:
-   ```
-   git clone <repository-url>
-   cd agent-village
-   ```
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+4. Set up your Gemini API key:
+   - Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a `.env` file in the project root
+   - Add your API key: `GEMINI_API_KEY=your_api_key_here`
+   - Note: Gemini API is extremely cost-effective, typically costing less than $0.01 per conversation
 
-3. Create a `.env` file based on the provided `.env.example`:
-   ```
-   cp .env.example .env
-   ```
+5. Run the application:
+```bash
+python agent_village.py
+```
 
-4. Edit the `.env` file to add your OpenAI API key:
-   ```
-   OPENAI_API_KEY=your_api_key_here
-   ```
+6. Open your browser and navigate to:
+```
+http://localhost:5001
+```
 
 ## Usage
 
-1. Start the application:
-   ```
-   python agent_village.py
-   ```
-
-2. Open your web browser and navigate to:
-   ```
-   http://localhost:5000
-   ```
-
-3. Use the web interface to:
-   - Monitor agent discussions in real-time
-   - View the evolving strategy
-   - Start new discussions on specific topics
-   - Clear logs when needed
+1. Enter your goals in the web interface
+2. Click "Start Discussion" to begin the AI collaboration
+3. Monitor the discussion in real-time
+4. Review and implement the suggested strategies
 
 ## Project Structure
 
-- `agent_village.py`: Main application file with agent definitions and Flask routes
-- `monitor.html`: Web interface for monitoring agent activities
-- `agent_logs.txt`: Persistent log file of all agent interactions
-- `current_strategy.txt`: File storing the current strategy
-- `requirements.txt`: Python dependencies
-- `.env`: Configuration file for API keys (not included in repository)
+- `agent_village.py`: Main application file
+- `agents.py`: Agent definitions and behaviors
+- `templates/`: HTML templates for the web interface
+- `goals.txt`: Stores your current goals
+- `current_strategy.txt`: Stores the current implementation strategy
 
-## Troubleshooting
+## Contributing
 
-If you encounter the error `ImportError: cannot import name 'APITimeoutError' from 'openai'`, try:
-```
-pip install --upgrade openai
-```
-
-For the warning about flaml.automl, you can install the additional dependencies:
-```
-pip install "flaml[automl]"
-```
-
-## License
-
-MIT 
+Feel free to submit issues and enhancement requests! 
