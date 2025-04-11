@@ -4,406 +4,392 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ForumAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f5f5f5;
-            --panel-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #dddddd;
-            --primary-color: #4CAF50;
-            --secondary-color: #2196F3;
-            --accent-color: #FF9800;
-            --highlight-color: #9C27B0;
-            --system-color: #607D8B;
-            --shadow-color: rgba(0,0,0,0.1);
-            --debug-color: #ff5252;
-        }
-        
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --panel-bg: #2d2d2d;
-            --text-color: #e0e0e0;
-            --border-color: #444444;
-            --primary-color: #66bb6a;
-            --secondary-color: #64b5f6;
-            --accent-color: #ffb74d;
-            --highlight-color: #ba68c8;
-            --system-color: #90a4ae;
-            --shadow-color: rgba(0,0,0,0.3);
-            --debug-color: #ff7676;
+            --primary: #4a90e2;
+            --secondary: #50e3c2;
+            --accent: #f5a623;
+            --background: #1a1a2e;
+            --panel: #16213e;
+            --text: #e6e6e6;
+            --border: #0f3460;
+            --researcher: #ff6b6b;
+            --strategist: #4ecdc4;
+            --implementer: #ffd166;
+            --user: #06d6a0;
+            --system: #ef476f;
         }
         
         body {
-            font-family: 'Courier New', monospace;
+            font-family: 'Press Start 2P', cursive;
             margin: 0;
-            padding: 10px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
+            padding: 20px;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            image-rendering: pixelated;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: 2fr 1fr;
+            grid-gap: 20px;
         }
         
-        .panel {
-            background-color: var(--panel-bg);
-            border-radius: 4px;
-            padding: 15px;
-            box-shadow: 0 1px 3px var(--shadow-color);
-        }
-        
-        h1, h2 {
-            color: var(--text-color);
-            margin-top: 0;
-            font-weight: 600;
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0px var(--border);
+            letter-spacing: 2px;
         }
         
         .title-ai {
-            color: var(--primary-color);
+            color: var(--secondary);
             font-weight: bold;
         }
         
-        .log-container, .strategy-container, .goals-container {
-            height: 400px;
+        .panel {
+            background-color: var(--panel);
+            border: 4px solid var(--border);
+            border-radius: 0;
+            padding: 15px;
+            box-shadow: 8px 8px 0px var(--border);
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            font-family: 'Press Start 2P', cursive;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px var(--border);
+        }
+        
+        button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--border);
+        }
+        
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--border);
+        }
+        
+        .start-btn {
+            background-color: var(--secondary);
+            color: var(--background);
+        }
+        
+        .stop-btn {
+            background-color: var(--accent);
+            color: var(--background);
+        }
+        
+        .clear-btn {
+            background-color: var(--system);
+            color: var(--background);
+        }
+        
+        .log-container {
+            height: 500px;
             overflow-y: auto;
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            margin-bottom: 15px;
-            background-color: var(--panel-bg);
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            font-size: 14px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border);
+            font-size: 10px;
+            line-height: 1.4;
         }
         
         .strategy-container, .goals-container {
             height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--border);
+            font-size: 10px;
+            line-height: 1.4;
+            margin-top: 10px;
         }
         
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin: 2px;
-            cursor: pointer;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
+        .researcher {
+            color: var(--researcher);
         }
         
-        button:disabled {
-            background-color: #666666;
-            cursor: not-allowed;
+        .strategist {
+            color: var(--strategist);
         }
         
-        button.stop {
-            background-color: #f44336;
+        .implementer {
+            color: var(--implementer);
         }
         
-        .controls {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .agent-researcher {
-            color: var(--secondary-color);
-        }
-        
-        .agent-strategist {
-            color: var(--primary-color);
-        }
-        
-        .agent-implementer {
-            color: var(--accent-color);
-        }
-        
-        .agent-user_proxy {
-            color: var(--highlight-color);
+        .user {
+            color: var(--user);
         }
         
         .system {
-            color: var(--system-color);
-            font-weight: bold;
+            color: var(--system);
         }
         
-        .theme-toggle {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
+        .debug {
+            color: #ff0000;
+            font-style: italic;
+        }
+        
+        /* Retro scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--panel);
+            border: 2px solid var(--border);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border: 2px solid var(--border);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+        
+        /* Pixelated corners */
+        .panel::before, .panel::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--border);
+        }
+        
+        .panel::before {
+            top: -4px;
+            left: -4px;
+        }
+        
+        .panel::after {
+            bottom: -4px;
+            right: -4px;
+        }
+        
+        /* Status indicator */
+        .status {
+            text-align: center;
+            margin-bottom: 10px;
             font-size: 12px;
-            color: var(--text-color);
+            padding: 5px;
+            background-color: var(--panel);
+            border: 2px solid var(--border);
         }
         
-        .debug-container {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            width: 300px;
-            height: 150px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 8px;
-            overflow-y: auto;
-            font-size: 12px;
-            color: var(--debug-color);
-            box-shadow: 0 1px 3px var(--shadow-color);
-            z-index: 1000;
+        .connected {
+            color: var(--secondary);
         }
         
-        .debug-toggle {
-            position: fixed;
-            bottom: 10px;
-            right: 320px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text-color);
+        .disconnected {
+            color: var(--system);
         }
         
-        .message {
-            margin-bottom: 5px;
-            padding: 3px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
+        /* Add timestamp styling */
         .timestamp {
-            color: var(--text-color);
-            opacity: 0.7;
-            font-size: 12px;
+            color: var(--primary);
+            opacity: 0.8;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
-    <button id="themeToggle" class="theme-toggle">Toggle Dark Mode</button>
-    <button id="debugToggle" class="debug-toggle">Toggle Debug</button>
-    <div id="debugContainer" class="debug-container" style="display: none;"></div>
+    <h1 class="title">Forum<span class="title-ai">AI</span></h1>
+    
+    <div class="status" id="connection-status">Connecting to server...</div>
     
     <div class="container">
-        <div class="panel">
-            <h1>Forum<span class="title-ai">AI</span></h1>
-            <div class="controls">
-                <button id="startBtn">Start Discussion</button>
-                <button id="stopBtn" class="stop" disabled>Stop Discussion</button>
-                <button id="clearBtn">Clear Logs</button>
+        <div class="main-panel">
+            <div class="button-container">
+                <button class="start-btn" id="start-btn">Start Discussion</button>
+                <button class="stop-btn" id="stop-btn">Stop Discussion</button>
+                <button class="clear-btn" id="clear-btn">Clear Logs</button>
             </div>
-            <h2>Chat Logs</h2>
-            <div id="logContainer" class="log-container"></div>
+            
+            <div class="panel">
+                <h2>Chat Logs</h2>
+                <div class="log-container" id="chat-log"></div>
+            </div>
         </div>
-        <div class="panel">
-            <h2>Current Strategy</h2>
-            <div id="strategyContainer" class="strategy-container"></div>
-            <h2>Goals</h2>
-            <div id="goalsContainer" class="goals-container"></div>
+        
+        <div class="side-panel">
+            <div class="panel">
+                <h2>Current Strategy</h2>
+                <div class="strategy-container" id="current-strategy"></div>
+            </div>
+            
+            <div class="panel">
+                <h2>Goals</h2>
+                <div class="goals-container" id="goals"></div>
+            </div>
         </div>
     </div>
-
+    
     <script>
-        // WebSocket connection
-        let ws = null;
-        const logContainer = document.getElementById('logContainer');
-        const strategyContainer = document.getElementById('strategyContainer');
-        const goalsContainer = document.getElementById('goalsContainer');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const themeToggle = document.getElementById('themeToggle');
-        const debugToggle = document.getElementById('debugToggle');
-        const debugContainer = document.getElementById('debugContainer');
-        
-        // Theme toggle
-        themeToggle.addEventListener('click', function() {
-            if (document.body.getAttribute('data-theme') === 'dark') {
-                document.body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.body.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
-        
-        // Debug toggle
-        debugToggle.addEventListener('click', function() {
-            if (debugContainer.style.display === 'none') {
-                debugContainer.style.display = 'block';
-                localStorage.setItem('debug', 'visible');
-            } else {
-                debugContainer.style.display = 'none';
-                localStorage.setItem('debug', 'hidden');
-            }
-        });
-        
-        // Check for saved preferences
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-        }
-        
-        if (localStorage.getItem('debug') === 'visible') {
-            debugContainer.style.display = 'block';
-        }
-        
-        // Debug function
+        // Debug function to log messages in red
         function debugLog(message) {
-            console.log(`[DEBUG] ${message}`);
-            // Add to debug container instead of log container
-            const debugMsg = `<div class="message">[DEBUG] ${message}</div>`;
-            debugContainer.innerHTML += debugMsg;
-            debugContainer.scrollTop = debugContainer.scrollHeight;
+            const logElement = document.getElementById('chat-log');
+            const debugEntry = document.createElement('div');
+            debugEntry.className = 'debug';
+            debugEntry.textContent = `DEBUG: ${message}`;
+            logElement.appendChild(debugEntry);
+            logElement.scrollTop = logElement.scrollHeight;
         }
         
-        // Function to format log messages with colors
+        // Function to format log messages with colors based on agent type
         function formatLogMessage(message) {
             debugLog(`Formatting message: ${message}`);
             
-            // Handle different message formats
-            let formattedContent = message;
+            // Check if message is a JSON string
+            let parsedMessage;
+            try {
+                parsedMessage = JSON.parse(message);
+                debugLog(`Parsed JSON message: ${JSON.stringify(parsedMessage)}`);
+            } catch (e) {
+                debugLog(`Message is not JSON: ${e.message}`);
+                // If not JSON, treat as plain text
+                parsedMessage = { log: message };
+            }
             
-            // Try to extract timestamp if present
-            const timestampMatch = message.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (.+)$/);
+            const logEntry = parsedMessage.log || message;
+            debugLog(`Log entry to display: ${logEntry}`);
+            
+            const logElement = document.getElementById('chat-log');
+            const entry = document.createElement('div');
+            
+            // Add appropriate class based on agent type
+            if (logEntry.includes('Researcher:')) {
+                entry.className = 'researcher';
+            } else if (logEntry.includes('Strategist:')) {
+                entry.className = 'strategist';
+            } else if (logEntry.includes('Implementer:')) {
+                entry.className = 'implementer';
+            } else if (logEntry.includes('User_Proxy:')) {
+                entry.className = 'user';
+            } else if (logEntry.includes('System:')) {
+                entry.className = 'system';
+            }
+            
+            // Add timestamp styling
+            const timestampMatch = logEntry.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (.+)$/);
             if (timestampMatch) {
                 const timestamp = timestampMatch[1];
                 const content = timestampMatch[2];
                 
-                // Format agent messages
-                if (content.includes('Researcher:')) {
-                    formattedContent = `<span class="agent-researcher">${content}</span>`;
-                } else if (content.includes('Strategist:')) {
-                    formattedContent = `<span class="agent-strategist">${content}</span>`;
-                } else if (content.includes('Implementer:')) {
-                    formattedContent = `<span class="agent-implementer">${content}</span>`;
-                } else if (content.includes('User_Proxy:')) {
-                    formattedContent = `<span class="agent-user_proxy">${content}</span>`;
-                } else if (content.includes('System:')) {
-                    formattedContent = `<span class="system">${content}</span>`;
-                }
+                const timestampSpan = document.createElement('span');
+                timestampSpan.className = 'timestamp';
+                timestampSpan.textContent = timestamp + ' - ';
                 
-                return `<div class="message"><span class="timestamp">${timestamp}</span> - ${formattedContent}</div>`;
+                const contentSpan = document.createElement('span');
+                contentSpan.textContent = content;
+                
+                entry.appendChild(timestampSpan);
+                entry.appendChild(contentSpan);
+            } else {
+                entry.textContent = logEntry;
             }
             
-            // If no timestamp, just format the content
-            if (message.includes('Researcher:')) {
-                formattedContent = `<span class="agent-researcher">${message}</span>`;
-            } else if (message.includes('Strategist:')) {
-                formattedContent = `<span class="agent-strategist">${message}</span>`;
-            } else if (message.includes('Implementer:')) {
-                formattedContent = `<span class="agent-implementer">${message}</span>`;
-            } else if (message.includes('User_Proxy:')) {
-                formattedContent = `<span class="agent-user_proxy">${message}</span>`;
-            } else if (message.includes('System:')) {
-                formattedContent = `<span class="system">${message}</span>`;
-            }
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
             
-            return `<div class="message">${formattedContent}</div>`;
+            // Play sound for new messages
+            fetch('/play_sound');
         }
         
+        // Function to establish WebSocket connection
         function connectWebSocket() {
             debugLog('Connecting to WebSocket...');
-            ws = new WebSocket('ws://' + window.location.hostname + ':5001/ws');
+            const ws = new WebSocket(`ws://${window.location.hostname}:5001/ws`);
             
             ws.onopen = function() {
-                debugLog('WebSocket connection established');
-                // Load initial logs
+                debugLog('WebSocket connected');
+                document.getElementById('connection-status').textContent = 'Connected to server';
+                document.getElementById('connection-status').classList.add('connected');
+                document.getElementById('connection-status').classList.remove('disconnected');
+                
+                // Fetch previous logs
                 fetch('/get_previous_logs')
-                    .then(response => response.text())
-                    .then(logs => {
-                        debugLog(`Received logs: ${logs.length} characters`);
-                        if (logs.trim()) {
-                            const logLines = logs.split('\n').filter(line => line.trim());
-                            logContainer.innerHTML = logLines.map(formatLogMessage).join('');
-                            logContainer.scrollTop = logContainer.scrollHeight;
+                    .then(response => response.json())
+                    .then(data => {
+                        debugLog(`Received previous logs: ${JSON.stringify(data)}`);
+                        if (data.logs && data.logs.length > 0) {
+                            data.logs.forEach(logLine => {
+                                formatLogMessage(JSON.stringify({log: logLine}));
+                            });
                         } else {
-                            debugLog('No logs found');
+                            debugLog('No previous logs found');
                         }
                     })
-                    .catch(error => debugLog(`Error loading logs: ${error}`));
+                    .catch(error => debugLog(`Error fetching logs: ${error}`));
                 
-                // Load initial strategy
+                // Fetch current strategy
                 fetch('/get_strategy')
                     .then(response => response.text())
                     .then(strategy => {
                         debugLog(`Received strategy: ${strategy.length} characters`);
-                        strategyContainer.textContent = strategy;
+                        document.getElementById('current-strategy').textContent = strategy;
                     })
-                    .catch(error => debugLog(`Error loading strategy: ${error}`));
+                    .catch(error => debugLog(`Error fetching strategy: ${error}`));
                 
-                // Load initial goals
+                // Fetch goals
                 fetch('/get_goals')
                     .then(response => response.text())
                     .then(goals => {
                         debugLog(`Received goals: ${goals.length} characters`);
-                        goalsContainer.textContent = goals;
+                        document.getElementById('goals').textContent = goals;
                     })
-                    .catch(error => debugLog(`Error loading goals: ${error}`));
+                    .catch(error => debugLog(`Error fetching goals: ${error}`));
             };
             
             ws.onmessage = function(event) {
                 debugLog(`Received WebSocket message: ${event.data}`);
-                try {
-                    // Check if the message is a JSON object
-                    let messageData = event.data;
-                    try {
-                        messageData = JSON.parse(event.data);
-                        if (messageData.log) {
-                            messageData = messageData.log;
-                        }
-                    } catch (e) {
-                        // Not JSON, use as is
-                    }
-                    
-                    const formattedMessage = formatLogMessage(messageData);
-                    logContainer.innerHTML += formattedMessage;
-                    logContainer.scrollTop = logContainer.scrollHeight;
-                    
-                    // Play sound for new messages
-                    fetch('/play_sound')
-                        .then(response => response.json())
-                        .then(data => debugLog(`Sound played: ${JSON.stringify(data)}`))
-                        .catch(error => debugLog(`Error playing sound: ${error}`));
-                } catch (error) {
-                    debugLog(`Error formatting message: ${error}`);
-                    // Add raw message if formatting fails
-                    logContainer.innerHTML += `<div class="message">${event.data}</div>`;
-                }
+                formatLogMessage(event.data);
             };
             
             ws.onclose = function() {
-                debugLog('WebSocket connection closed, attempting to reconnect...');
-                setTimeout(connectWebSocket, 1000);
+                debugLog('WebSocket disconnected');
+                document.getElementById('connection-status').textContent = 'Disconnected from server';
+                document.getElementById('connection-status').classList.remove('connected');
+                document.getElementById('connection-status').classList.add('disconnected');
+                
+                // Try to reconnect after 5 seconds
+                setTimeout(connectWebSocket, 5000);
             };
             
             ws.onerror = function(error) {
                 debugLog(`WebSocket error: ${error}`);
             };
+            
+            return ws;
         }
         
-        // Initial connection
-        connectWebSocket();
+        // Connect to WebSocket when page loads
+        let ws = connectWebSocket();
         
         // Button event handlers
-        startBtn.addEventListener('click', function() {
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            
-            // Clear logs before starting new discussion
-            logContainer.innerHTML = '';
-            
+        document.getElementById('start-btn').addEventListener('click', function() {
+            debugLog('Start button clicked');
             fetch('/start_discussion', {
                 method: 'POST',
                 headers: {
@@ -415,42 +401,61 @@
             })
             .then(response => response.json())
             .then(data => {
-                debugLog(`Discussion started: ${JSON.stringify(data)}`);
+                debugLog(`Start discussion response: ${JSON.stringify(data)}`);
+                if (data.status === 'success') {
+                    if (data.message && typeof data.message === 'object') {
+                        formatLogMessage(JSON.stringify({log: `System: ${data.message.message}`}));
+                    } else {
+                        formatLogMessage(JSON.stringify({log: `System: ${data.message}`}));
+                    }
+                } else {
+                    formatLogMessage(JSON.stringify({log: `System: Error starting discussion: ${data.message}`}));
+                }
             })
             .catch(error => {
                 debugLog(`Error starting discussion: ${error}`);
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
+                formatLogMessage(JSON.stringify({log: `System: Error starting discussion: ${error}`}));
             });
         });
         
-        stopBtn.addEventListener('click', function() {
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            
+        document.getElementById('stop-btn').addEventListener('click', function() {
+            debugLog('Stop button clicked');
             fetch('/stop_discussion', {
                 method: 'POST'
             })
             .then(response => response.json())
             .then(data => {
-                debugLog(`Discussion stopped: ${JSON.stringify(data)}`);
+                debugLog(`Stop discussion response: ${JSON.stringify(data)}`);
+                if (data.status === 'success') {
+                    formatLogMessage(JSON.stringify({log: `System: ${data.message}`}));
+                } else {
+                    formatLogMessage(JSON.stringify({log: `System: Error stopping discussion: ${data.message}`}));
+                }
             })
             .catch(error => {
                 debugLog(`Error stopping discussion: ${error}`);
+                formatLogMessage(JSON.stringify({log: `System: Error stopping discussion: ${error}`}));
             });
         });
         
-        clearBtn.addEventListener('click', function() {
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            debugLog('Clear button clicked');
             fetch('/clear_logs', {
                 method: 'POST'
             })
-            .then(response => response.text())
-            .then(result => {
-                debugLog(`Logs cleared: ${result}`);
-                logContainer.innerHTML = '';
+            .then(response => response.json())
+            .then(data => {
+                debugLog(`Clear logs response: ${JSON.stringify(data)}`);
+                if (data.status === 'success') {
+                    document.getElementById('chat-log').innerHTML = '';
+                    formatLogMessage(JSON.stringify({log: 'System: Logs cleared'}));
+                } else {
+                    formatLogMessage(JSON.stringify({log: `System: Error clearing logs: ${data.message}`}));
+                }
             })
             .catch(error => {
                 debugLog(`Error clearing logs: ${error}`);
+                formatLogMessage(JSON.stringify({log: `System: Error clearing logs: ${error}`}));
             });
         });
     </script>

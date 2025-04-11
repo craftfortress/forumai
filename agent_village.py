@@ -21,6 +21,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 sock = Sock(app)
 
+# Add Content Security Policy headers
+@app.after_request
+def add_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+    return response
+
 # Global variables to store logs and strategy
 chat_logs = []
 current_strategy = "Initial strategy: Set clear, measurable goals and create actionable steps to achieve them through effective collaboration and continuous progress tracking."
@@ -39,11 +45,13 @@ genai.configure(api_key=api_key)
 # Create the model configuration
 model_config = {
     "config_list": [{
-        "model": "gemini-1.5-pro-001",
+        "model": "gemini-1.5-pro",
         "api_key": api_key,
         "base_url": "https://generativelanguage.googleapis.com/v1beta",
         "api_type": "google"
-    }]
+    }],
+    "timeout": 600,
+    "cache_seed": None
 }
 
 # Create necessary files if they don't exist
@@ -70,7 +78,8 @@ researcher = AssistantAgent(
     1. Read goals from goals.txt (read-only)
     2. Read strategy from current_strategy.txt (read-only)
     3. Analyze and provide insights
-    4. Be extremely concise - use bullet points and short sentences"""
+    4. Be extremely concise - use bullet points and short sentences""",
+    human_input_mode="NEVER"
 )
 
 strategist = AssistantAgent(
@@ -80,7 +89,8 @@ strategist = AssistantAgent(
     1. Read goals from goals.txt (read-only)
     2. Read/write strategy in current_strategy.txt
     3. Create actionable steps
-    4. Be extremely concise - use bullet points and short sentences"""
+    4. Be extremely concise - use bullet points and short sentences""",
+    human_input_mode="NEVER"
 )
 
 implementer = AssistantAgent(
@@ -90,7 +100,8 @@ implementer = AssistantAgent(
     1. Read goals from goals.txt (read-only)
     2. Read strategy from current_strategy.txt (read-only)
     3. Create practical action steps
-    4. Be extremely concise - use bullet points and short sentences"""
+    4. Be extremely concise - use bullet points and short sentences""",
+    human_input_mode="NEVER"
 )
 
 user_proxy = UserProxyAgent(
@@ -138,13 +149,14 @@ def log_message(sender, message):
 
 # Function to broadcast log to all connected clients
 def broadcast_log(log_entry):
-    logger.info(f"Broadcasting log to {len(connected_clients)} clients: {log_entry}")
+    """Broadcast a log message to all connected clients"""
+    logger.info(f"Broadcasting log: {log_entry}")
+    message = json.dumps({"log": log_entry})
     for client in connected_clients:
         try:
-            client.send(log_entry)
-            logger.info(f"Successfully sent log to client")
+            client.send(message)
         except Exception as e:
-            logger.error(f"Error sending log to client: {e}")
+            logger.error(f"Error sending to client: {e}")
             connected_clients.remove(client)
 
 # Function to update strategy file
@@ -174,13 +186,16 @@ def ws(ws):
             logs = f.read()
             if logs:
                 logger.info(f"Sending initial logs to client: {len(logs)} characters")
-                ws.send(logs)
+                # Send each log entry separately
+                for log_line in logs.split('\n'):
+                    if log_line.strip():
+                        ws.send(json.dumps({"log": log_line}))
             else:
                 logger.info("No initial logs to send")
         
         # Send a test message
         test_message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - System: WebSocket connection established"
-        ws.send(test_message)
+        ws.send(json.dumps({"log": test_message}))
         logger.info(f"Sent test message: {test_message}")
         
         # Keep the connection open
@@ -197,33 +212,32 @@ def ws(ws):
 
 # Function to start a discussion
 def start_discussion(topic):
+    """Start a discussion with the agents"""
     global active_discussion
     
     if active_discussion:
-        log_message("System", "A discussion is already in progress. Please stop it first.")
-        return "A discussion is already in progress. Please stop it first."
+        return {"status": "error", "message": "A discussion is already in progress. Please stop it first."}
     
     try:
         active_discussion = True
-        log_message("System", f"Starting discussion on topic: {topic}")
+        broadcast_log(f"System: Starting discussion on topic: {topic}")
         
-        # Read goals from goals.txt
+        # Read goals and strategy files
         try:
             with open("goals.txt", "r") as f:
                 goals = f.read()
         except FileNotFoundError:
-            goals = "No goals file found. Please create goals.txt with your objectives."
-            log_message("System", "Warning: goals.txt not found")
+            goals = "No goals file found."
+            broadcast_log("System: Warning - goals.txt not found")
         
-        # Read current strategy
         try:
             with open("current_strategy.txt", "r") as f:
                 current_strategy = f.read()
         except FileNotFoundError:
             current_strategy = "No strategy file found."
-            log_message("System", "Warning: current_strategy.txt not found")
+            broadcast_log("System: Warning - current_strategy.txt not found")
         
-        # Create a message with the topic, goals, and strategy
+        # Create the message for the agents
         message = f"""
         Let's discuss the following topic: {topic}
         
@@ -233,9 +247,7 @@ def start_discussion(topic):
         Current strategy (from current_strategy.txt):
         {current_strategy}
         
-        Please provide your thoughts and suggestions. If the discussion relates to a specific subject in the strategy, please refine that subject. If it's a new subject, please add it to the strategy file.
-        
-        Remember:
+        Please provide your thoughts and suggestions. Remember:
         1. Goals are read-only from goals.txt
         2. Strategy can be read/written in current_strategy.txt
         3. Be extremely concise - use bullet points and short sentences
@@ -244,40 +256,43 @@ def start_discussion(topic):
         6. DO NOT ask for the contents of goals.txt or current_strategy.txt - they are provided above
         """
         
-        # Initiate the group chat and capture messages
+        # Start the discussion
         try:
-            result = chat_manager.initiate_chat(
+            # Initialize the chat with the message
+            response = chat_manager.initiate_chat(
                 user_proxy,
                 message=message
             )
             
-            if result is None:
-                raise Exception("Chat manager returned None response")
+            # Process the response
+            if response is not None:
+                if hasattr(response, 'summary'):
+                    broadcast_log(f"System: Discussion completed with summary: {response.summary}")
+                else:
+                    broadcast_log("System: Discussion completed")
+                
+                # Log any messages from the chat
+                if hasattr(groupchat, 'messages') and groupchat.messages:
+                    for msg in groupchat.messages:
+                        if isinstance(msg, dict) and 'content' in msg and 'name' in msg:
+                            broadcast_log(f"{msg['name']}: {msg['content']}")
+            else:
+                broadcast_log("System: No response from chat manager")
             
-            # Log the messages from the chat
-            for msg in groupchat.messages:
-                if isinstance(msg, dict) and 'content' in msg and 'name' in msg:
-                    log_message(msg['name'], msg['content'])
-                    
-                    # Check if the message contains strategy updates
-                    if msg['name'] == 'Strategist' and 'strategy' in msg['content'].lower():
-                        # Extract the strategy part
-                        strategy_text = msg['content']
-                        # Update the strategy file
-                        update_strategy_file(strategy_text)
-        except Exception as e:
-            log_message("System", f"Error in chat: {str(e)}")
             active_discussion = False
-            return f"Error in chat: {str(e)}"
-        
-        active_discussion = False
-        return "Discussion completed successfully"
+            return {"status": "success", "message": "Discussion completed successfully"}
+            
+        except Exception as chat_error:
+            logger.error(f"Error in chat: {str(chat_error)}")
+            broadcast_log(f"System: Error in chat: {str(chat_error)}")
+            active_discussion = False
+            return {"status": "error", "message": f"Error in chat: {str(chat_error)}"}
+            
     except Exception as e:
+        logger.error(f"Error starting discussion: {str(e)}")
+        broadcast_log(f"System: Error starting discussion: {str(e)}")
         active_discussion = False
-        error_msg = f"Error starting discussion: {str(e)}"
-        logger.error(error_msg)
-        log_message("System", error_msg)
-        return error_msg
+        return {"status": "error", "message": f"Error starting discussion: {str(e)}"}
 
 # Function to stop a discussion
 def stop_discussion():
@@ -345,15 +360,37 @@ def api_stop_discussion():
 
 @app.route('/clear_logs', methods=['POST'])
 def clear_logs():
+    global chat_logs
+    chat_logs = []
+    with open("agent_logs.txt", "w") as f:
+        f.write("")
+    log_message("System", "Logs cleared")
+    return jsonify({"status": "success"})
+
+@app.route('/save_strategy', methods=['POST'])
+def save_strategy():
     try:
-        with open("agent_logs.txt", "w") as f:
-            f.write("")
-        chat_logs.clear()
-        log_message("System", "Logs cleared")
-        return "Logs cleared successfully"
+        data = request.get_json()
+        strategy = data.get('strategy', '')
+        if update_strategy_file(strategy):
+            return jsonify({"status": "success"})
+        return jsonify({"status": "error", "message": "Failed to update strategy"}), 500
     except Exception as e:
-        logger.error(f"Error clearing logs: {e}")
-        return str(e), 500
+        logger.error(f"Error saving strategy: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/save_goals', methods=['POST'])
+def save_goals():
+    try:
+        data = request.get_json()
+        goals = data.get('goals', '')
+        with open("goals.txt", "w") as f:
+            f.write(goals)
+        log_message("System", "Goals updated")
+        return jsonify({"status": "success"})
+    except Exception as e:
+        logger.error(f"Error saving goals: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/test')
 def test():
@@ -364,10 +401,15 @@ def get_previous_logs():
     try:
         with open("agent_logs.txt", "r") as f:
             logs = f.read()
-        return logs
+            if logs:
+                # Return logs as a JSON array
+                log_lines = [line.strip() for line in logs.split('\n') if line.strip()]
+                return jsonify({"logs": log_lines})
+            else:
+                return jsonify({"logs": []})
     except Exception as e:
         logger.error(f"Error reading previous logs: {e}")
-        return "Error reading previous logs"
+        return jsonify({"logs": [], "error": str(e)})
 
 @app.route('/get_goals')
 def get_goals():
@@ -378,18 +420,6 @@ def get_goals():
     except Exception as e:
         logger.error(f"Error reading goals: {e}")
         return "Error reading goals"
-
-@app.route('/save_goals', methods=['POST'])
-def save_goals():
-    try:
-        data = request.json
-        goals = data.get('goals', '')
-        with open("goals.txt", "w") as f:
-            f.write(goals)
-        return jsonify({"status": "success"})
-    except Exception as e:
-        logger.error(f"Error saving goals: {e}")
-        return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/ws_test')
 def ws_test():

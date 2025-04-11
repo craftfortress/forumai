@@ -2,7 +2,7 @@
 
 ## Simplest Agent Chat system for idiots - just add your gemini token
 
-A collaborative AI system that uses multiple AI agents to help achieve your goals through strategic discussions and implementation planning.
+A collaborative AI system that uses multiple AI agents to help achieve your goals through strategic discussions and implementation planning. This project extends Microsoft's AutoGen framework with Google's Gemini AI, providing a simplified interface for multi-agent collaboration.
 
 ## Features
 
@@ -61,6 +61,29 @@ http://localhost:5001
 - `templates/`: HTML templates for the web interface
 - `goals.txt`: Stores your current goals
 - `current_strategy.txt`: Stores the current implementation strategy
+
+## Future Improvements
+
+- [ ] Add support for multiple concurrent discussions
+- [ ] Implement conversation history persistence
+- [ ] Add user authentication and authorization
+- [ ] Create a more robust error handling system
+- [ ] Add support for file attachments in discussions
+- [ ] Implement real-time collaboration features
+- [ ] Add support for custom agent configurations
+- [ ] Create a plugin system for extending functionality
+- [ ] Add support for different LLM providers
+- [ ] Implement conversation export/import functionality
+- [ ] Add support for conversation branching
+- [ ] Create a more sophisticated agent selection system
+- [ ] Add support for conversation templates
+- [ ] Implement conversation analytics and insights
+- [ ] Add support for conversation scheduling
+- [ ] Create a more robust WebSocket reconnection system
+- [ ] Add support for conversation archiving
+- [ ] Implement conversation search functionality
+- [ ] Add support for conversation tagging
+- [ ] Create a more sophisticated UI with dark mode support
 
 ## Contributing
 
