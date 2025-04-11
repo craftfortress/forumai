@@ -1,4 +1,5 @@
 # ForumAI
+## Simplest Agent Chat system for idiots - just add your gemini token
 
 A collaborative AI system that uses multiple AI agents to help achieve your goals through strategic discussions and implementation planning.
 
